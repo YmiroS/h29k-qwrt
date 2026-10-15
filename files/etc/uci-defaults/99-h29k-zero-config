@@ -1,30 +1,21 @@
 #!/bin/sh
 
-# H29K QWRT Zero Configuration
+# H29K QWRT SD-card test configuration
 
-# Enable WiFi
-uci set wireless.radio0.disabled='0'
-
-# Create default WiFi AP
-uci -q delete wireless.default_radio0
-uci set wireless.default_radio0='wifi-iface'
-uci set wireless.default_radio0.device='radio0'
-uci set wireless.default_radio0.mode='ap'
-uci set wireless.default_radio0.network='lan'
-uci set wireless.default_radio0.ssid='H29K'
-uci set wireless.default_radio0.encryption='psk2'
-uci set wireless.default_radio0.key='12345678'
-
-# LAN
+# Use a distinct LAN subnet so testers can identify the SD-card build.
 uci set network.lan.device='br-lan'
 uci set network.lan.proto='static'
-uci set network.lan.ipaddr='192.168.1.1'
+uci set network.lan.ipaddr='192.168.51.1'
 uci set network.lan.netmask='255.255.255.0'
-
-uci commit wireless
 uci commit network
 
-wifi reload 2>/dev/null || true
+# Do not expose a predictable default Wi-Fi password. The AIC8800 radio can
+# be enabled and configured after logging in over a direct Ethernet link.
+if uci -q get wireless.radio0 >/dev/null; then
+	uci set wireless.radio0.disabled='1'
+	uci commit wireless
+fi
+
 /etc/init.d/network reload 2>/dev/null || true
 
 exit 0
