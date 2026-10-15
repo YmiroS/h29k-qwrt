@@ -135,6 +135,26 @@ jobs:
 
           test -f openwrt/package/kernel/aic8800/Makefile
 
+      - name: Add QModem
+        run: |
+          set -e
+
+          git clone \
+            --filter=blob:none \
+            --no-checkout \
+            https://github.com/FUjr/QModem.git \
+            qmodem
+
+          cd qmodem
+          git checkout c49654efc870f53712ee8e25bf181722eb1466d9
+          cd ..
+
+          rm -rf openwrt/package/qmodem
+          cp -a qmodem openwrt/package/qmodem
+
+          test -f openwrt/package/qmodem/application/qmodem/Makefile
+          test -f openwrt/package/qmodem/luci/luci-app-qmodem-next/Makefile
+
       - name: Prepare Kwrt build
         working-directory: openwrt
         run: |
@@ -352,7 +372,7 @@ jobs:
             CONFIG_PACKAGE_kmod-usb-net-cdc-ncm \
             CONFIG_PACKAGE_kmod-usb-net-cdc-mbim \
             CONFIG_PACKAGE_kmod-usb-net-qmi-wwan \
-            CONFIG_PACKAGE_luci-app-qmodem; do
+            CONFIG_PACKAGE_luci-app-qmodem-next; do
             grep -q "^${symbol}=y$" .config || {
               echo "ERROR: required option ${symbol} is not enabled"
               exit 1
