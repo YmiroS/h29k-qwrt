@@ -428,6 +428,8 @@ jobs:
           make download -j8
 
       - name: Compile
+        id: compile
+        continue-on-error: true
         working-directory: openwrt
         run: |
           set -e
@@ -481,18 +483,18 @@ jobs:
 
           make -j$(($(nproc)+1))
 
-      - name: Debug package install
-        if: failure()
+      - name: Diagnose target build failure
+        if: steps.compile.outcome == 'failure'
         working-directory: openwrt
         run: |
           set -e
 
-          echo "===== DEBUG PACKAGE INSTALL ====="
-
-          make package/install V=sc -j1
+          echo "===== SERIAL TARGET/LINUX DIAGNOSTIC ====="
+          make target/linux/compile -j1 V=s
+          exit 1
 
       - name: Validate firmware artifacts
-        if: success()
+        if: steps.compile.outcome == 'success'
         run: |
           set -e
 
