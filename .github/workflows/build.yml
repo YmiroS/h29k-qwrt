@@ -436,17 +436,16 @@ jobs:
 
           make target/linux/prepare V=s
 
-          KERNEL="build_dir/target-aarch64_generic_musl/linux-rockchip_armv8/linux-6.12.94/drivers/thermal/rockchip_thermal.c"
+          KERNEL="$(find build_dir -path '*/drivers/thermal/rockchip_thermal.c' -print -quit)"
 
           echo "===== Fix Rockchip thermal warning ====="
 
-          if [ -f "$KERNEL" ]; then
+          if [ -n "$KERNEL" ] && [ -f "$KERNEL" ]; then
             sed -i \
               's/^static int rk_tsadcv3_get_trim_code(/static __maybe_unused int rk_tsadcv3_get_trim_code(/' \
               "$KERNEL"
           else
             echo "ERROR: kernel thermal source not found"
-            find build_dir -name rockchip_thermal.c -print
             exit 1
           fi
 
